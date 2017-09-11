@@ -1,0 +1,33 @@
+#!/bin/bash
+# Create the C representation of the tar file that the
+# SketchSaver library will embed in the Arduino binary.
+# This can be run with no arguments, in which case it will
+# archive the directory above it, or a path to the
+# sketch directory can be passed on the command line.
+
+DIR="`dirname $0`"
+
+if [ ! -z "$1" ]; then
+	SRCDIR="$1"
+	cd "$SRCDIR"
+else
+	SRCDIR="$DIR"
+	DIR="$(cd "$DIR" ; pwd)"
+	cd "$SRCDIR/.."
+fi
+
+
+echo 1>&2 "DIR=$DIR"
+echo 1>&2 "SRCDIR=$SRCDIR"
+echo 1>&2 "TARDIR=$(basename $(pwd))"
+
+tar \
+        -jcvf - \
+        --exclude source_raw.h \
+        --exclude '.git*' \
+        --exclude '.hg*' \
+        --exclude '.*.swp' \
+        -C .. \
+        "./$(basename $(pwd))" \
+| xxd -i > "$DIR/source_raw.h"
+
